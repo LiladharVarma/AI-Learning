@@ -35,7 +35,7 @@ messages = [
 
 # Call the model 
 
-completion = client.models.generate_content(
+response = client.models.generate_content(
     model = MODEL ,
     contents = messages,
     config = types.GenerateContentConfig(
@@ -46,8 +46,11 @@ completion = client.models.generate_content(
 )
 
 # print(f"This is the completuion object : {completion}")
-cmd = completion.parsed
-print(f"This is the completion parsed object : {cmd}")
-print(cmd.name, "|", cmd.date , "|" ,cmd.participants)
-print(type(cmd))
+event = response.parsed
+if event is None:
+    print("No structured result")
+else:
+    print(event)
+    print(event.name, "|", event.date, "|", event.participants)
+    print(type(event))
 # print(f"This is the completion text : {completion.text}")
