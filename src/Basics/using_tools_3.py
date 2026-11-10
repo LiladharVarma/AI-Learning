@@ -59,14 +59,48 @@ response.function_calls
 # Since model responses cam include zero , one or multiple calls , it is best practice to assume there are severals.
 
 def call_function(name , args):
+
     if name == "get_weather":
-        return get_weather(**args)
+        try:
+            return get_weather(**args)
+        except Exception as e: 
+            return {"error" : str(e)}
+    else:
+        return {"error" : f"Tool with name : {name} is not available"}
 
 
+messages.append(response.candidates[0].content)   # Gemini's own request, unchanged
 
+result_parts = []
 for tool_call in response.function_calls:
     result = call_function(tool_call.name, tool_call.args)
     print(f"Function {tool_call.name} called with arguments {tool_call.args}. Result: {result}")
-    messages.append(
-        {"role": "tool", "tool_call_id": tool_call.id, "parts": [{"text": {result}}]}
+    result_parts.append(
+        types.Part(
+            function_response=types.FunctionResponse(
+                id=tool_call.id,
+                name=tool_call.name,
+                response={"result": result},
+            )
+        )
     )
+
+result_parts
+
+messages
+
+messages.append(types.Content(role="user", parts=result_parts))   # all results, one message
+messages
+
+
+response = client.models.generate_content(
+    model=MODEL,
+    contents=messages,
+    config=types.GenerateContentConfig(
+        system_instruction="You are a helpful weather assistant.",
+        tools=tools,
+    ),
+)
+
+response
+response.text
