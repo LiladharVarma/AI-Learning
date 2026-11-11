@@ -2,7 +2,7 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 import requests
-
+import json
 from pydantic import BaseModel , Field
 
 load_dotenv()
@@ -53,7 +53,6 @@ response = client.models.generate_content(
     ),
 )
 
-response
 response.function_calls
 
 # Calling the function 
@@ -72,13 +71,13 @@ def call_function(name , args):
 
 
 messages.append(response.candidates[0].content)   # Gemini's own request, unchanged
-
+messages
 result_parts = []
 for tool_call in response.function_calls:
     print(f"type of tool name : {type(tool_call.name)}")
     print(f"type of tool args : {type(tool_call.args)}")
 
-    arguments = json.loads(tool_call.args)
+    # arguments = json.loads(tool_call.args)
     print(f"type of json loads args : {type(tool_call.args)}")
 
     result = call_function(tool_call.name, tool_call.args)
@@ -99,7 +98,7 @@ messages.append(types.Content(role="user", parts=result_parts))   # all results,
 
 class WeatherResponse(BaseModel):
 
-    temperature : Float = Field(
+    temperature : float = Field(
         description = "The current temperature in celsius for the given location."
     )
 
@@ -115,8 +114,14 @@ response = client.models.generate_content(
     config=types.GenerateContentConfig(
         system_instruction="You are a helpful weather assistant.",
         tools=tools,
-        respone_schema = WeatherResponse
+        response_mime_type = "application/json",
+        response_schema = WeatherResponse
     ),
 )
 
-response
+type(response)
+
+event = response.parsed
+
+event
+type(event)
