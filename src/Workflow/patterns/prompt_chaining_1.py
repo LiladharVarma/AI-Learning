@@ -111,9 +111,9 @@ def generate_confirmation(event_details: EventDetails) -> EventConfirmation:
             model = MODEL , 
             messages = [
                
-                {"role": "user", "parts": [{"text": event_details}]},
+                {"role": "user", "parts": [{"text": event_details.model_dump_json()}]},
             ],
-            sys_instructions=f"Generate a natural confirmation message for the event. Sign of with your name; Susie",
+            sys_instructions=f"Generate a natural confirmation message for the event. Sign off with the name Susie",
             response_schema=EventConfirmation
         )
     
@@ -161,7 +161,7 @@ for text in [
         print("This doesn't appear to be a calendar event request.")
 
 
-text = "Let's schedule a 1h team meeting next Tuesday at 2pm with Alice and Bob to discuss the project roadmap."
+text = "Can you send an email to Alice and Bob to discuss the project roadmap?"
 
 result = process_calendar_request(text)
 if result:
