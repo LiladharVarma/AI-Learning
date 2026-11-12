@@ -93,14 +93,14 @@ def parse_event_details(description):
 
     response = ask_gemini(
         model = MODEL ,
-        contents = [
+        messages = [
             {"role": "user", "parts":[{"text" : description }]}
         ],
         sys_instructions= f"You are a helpful assistant that parse event information from a given description. Today's date is {today}.",
         response_schema=EventDetails
     )
 
-    return response.parsed
+    return response
 
 
 def generate_confirmation(event_details: EventDetails) -> EventConfirmation:
@@ -109,11 +109,11 @@ def generate_confirmation(event_details: EventDetails) -> EventConfirmation:
     
     result = ask_gemini(
             model = MODEL , 
-            contents = [
+            messages = [
                
                 {"role": "user", "parts": [{"text": event_details}]},
-            ]
-            sys_instructions=f"Generate a natural confirmation message for the event. Sign of with your name; Susie"
+            ],
+            sys_instructions=f"Generate a natural confirmation message for the event. Sign of with your name; Susie",
             response_schema=EventConfirmation
         )
     
@@ -141,7 +141,7 @@ def process_calendar_request(user_input)-> Optional[ EventConfirmation]:
 
      # Second LLM call: Get detailed event information
     details = parse_event_details(first.description)
-
+    logger.info(f"Event details parsed: {details}")
     # Third LLM call for confirmation message generation 
     confirmation = generate_confirmation(details)
 
@@ -160,3 +160,11 @@ for text in [
     else:
         print("This doesn't appear to be a calendar event request.")
 
+
+text = "Let's schedule a 1h team meeting next Tuesday at 2pm with Alice and Bob to discuss the project roadmap."
+
+result = process_calendar_request(text)
+if result:
+    print(result)
+else:
+    print("This doesn't appear to be a calendar event request.")
